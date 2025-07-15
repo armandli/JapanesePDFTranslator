@@ -134,6 +134,6 @@ class TestPicExtract:
       extractor = PDFImageExtractor(str(sample_pdf), output_prefix)
       output_files = extractor.extract_images()
 
-      # Based on the issue description, we expect to extract images
-      # The PDF has 2 pages, each with 1 image, so we expect 2 images
-      assert len(output_files) == 2, f"Expected 2 images, but got {len(output_files)}"
+      # Based on the issue description, we expect to extract 3 images
+      # The PDF has 2 pages: page 1 with 1 picture, page 2 with 2 pictures
+      assert len(output_files) == 3, f"Expected 3 images, but got {len(output_files)}"
