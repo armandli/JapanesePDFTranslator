@@ -1,0 +1,8 @@
+# Output Directory
+
+Translated English PDF files will be saved here.
+
+## File Naming Convention
+- Original filename with "_translated" suffix
+- Preserve original extension
+- Include timestamp for multiple translations
