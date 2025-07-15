@@ -1,0 +1,23 @@
+# Core dependencies
+marimo>=0.9.0
+
+# PDF processing libraries
+pypdf>=4.0.0
+pdfplumber>=0.11.0
+PyMuPDF>=1.24.0
+
+# Japanese to English translation libraries
+googletrans>=4.0.0
+deep-translator>=1.11.0
+openai>=1.0.0
+
+# HTML processing libraries
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+html5lib>=1.1
+
+# Additional useful dependencies
+requests>=2.31.0
+pillow>=10.0.0
+numpy>=1.24.0
+pandas>=2.0.0
