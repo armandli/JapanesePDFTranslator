@@ -51,6 +51,7 @@ setup(
   entry_points={
     "console_scripts": [
       "japanese-pdf-translator=sensei.cli:main",
+      "pdf_to_html=sensei.pdf_to_html:main",
     ],
   },
   include_package_data=True,
