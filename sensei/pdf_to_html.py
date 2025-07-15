@@ -9,7 +9,6 @@ import sys
 import argparse
 from typing import List, Dict, Optional
 from pathlib import Path
-import base64
 import io
 
 # PDF processing libraries
@@ -334,7 +333,7 @@ class PDFToHTMLConverter:
     return converted_blocks
 
   def generate_html(self, text_blocks: List[PDFTextBlock], images: List[PDFImage]) -> str:
-    """Generate HTML content from text blocks and images."""
+    """Generate HTML content from text blocks (images are ignored)."""
     html_template = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -388,14 +387,8 @@ class PDFToHTMLConverter:
     # Add text blocks
     for block in text_blocks:
       if block.page not in pages:
-        pages[block.page] = {'text': [], 'images': []}
+        pages[block.page] = {'text': []}
       pages[block.page]['text'].append(block)
-
-    # Add images
-    for image in images:
-      if image.page not in pages:
-        pages[image.page] = {'text': [], 'images': []}
-      pages[image.page]['images'].append(image)
 
     # Generate HTML content
     content_parts = []
@@ -409,11 +402,6 @@ class PDFToHTMLConverter:
       for block in page_data['text']:
         if block.text.strip():
           content_parts.append(f'<div class="text-block">{block.text}</div>')
-
-      # Add images
-      for image in page_data['images']:
-        image_b64 = base64.b64encode(image.image_data).decode('utf-8')
-        content_parts.append(f'<img class="image" src="data:image/png;base64,{image_b64}" alt="PDF Image" />')
 
       content_parts.append('</div>')
 
