@@ -171,8 +171,9 @@ class TestPDFToHTMLConverter:
       assert "<title>Converted PDF</title>" in html_content
       assert "Hello" in html_content
       assert "World" in html_content
-      assert "data:image/png;base64," in html_content
       assert "Page 1" in html_content
+      # Images should not be embedded in HTML (per new requirements)
+      assert "data:image/png;base64," not in html_content
     finally:
       os.unlink(tmp_pdf_path)
 
@@ -389,8 +390,8 @@ def test_iai_tranomaki_jushinryu_pdf():
     # Test 2: HTML should have white background
     assert 'background-color: white' in html_content, "HTML should have white background"
     
-    # Test 3: HTML should contain images
-    assert 'data:image/png;base64,' in html_content, "HTML should contain embedded images"
+    # Test 3: HTML should NOT contain embedded images (per new requirements)
+    assert 'data:image/png;base64,' not in html_content, "HTML should not contain embedded images"
     
     # Test 4: HTML should contain Page 1 and Page 2
     assert 'Page 1' in html_content, "HTML should contain Page 1"
