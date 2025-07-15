@@ -209,3 +209,6 @@ __marimo__/
 # Project specific
 venv/
 .venv/
+
+# Temporary test files
+pdf/output/test_*.html
