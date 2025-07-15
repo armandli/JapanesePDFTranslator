@@ -96,18 +96,18 @@ class PDFToHTMLConverter:
   def extract_text_with_ocr(self) -> List[PDFTextBlock]:
     """Extract text blocks using OCR from PDF pages."""
     text_blocks = []
-    
+
     doc = fitz.open(self.input_pdf_path)
-    
+
     for page_num, page in enumerate(doc):
       # Get page as high-resolution image
       mat = fitz.Matrix(2, 2)  # 2x zoom for better OCR accuracy
       pix = page.get_pixmap(matrix=mat)
       img_data = pix.tobytes('png')
-      
+
       # Convert to PIL Image
       img = Image.open(io.BytesIO(img_data))
-      
+
       # Handle rotation - if page is rotated, rotate it back
       if page.rotation == 180:
         img = img.rotate(180, expand=True)
@@ -115,44 +115,50 @@ class PDFToHTMLConverter:
         img = img.rotate(-90, expand=True)
       elif page.rotation == 270:
         img = img.rotate(90, expand=True)
-      
+
       # Use OCR to extract text with position data
       try:
         # Get detailed OCR data with bounding boxes
-        # Try Japanese OCR first
-        ocr_data = pytesseract.image_to_data(img, lang='jpn', output_type=pytesseract.Output.DICT)
-        
-        # If Japanese OCR doesn't produce good results, try with English as fallback
+        # Try Japanese OCR with optimized configuration for better accuracy
+        # PSM 6 (Uniform block of text) works best for Japanese documents
+        ocr_data = pytesseract.image_to_data(
+          img,
+          lang='jpn',
+          output_type=pytesseract.Output.DICT,
+          config='--psm 6 --oem 3 -c preserve_interword_spaces=1'
+        )
+
+        # If Japanese OCR doesn't produce good results, try with default config as fallback
         if not any(text.strip() for text in ocr_data['text']):
-          ocr_data = pytesseract.image_to_data(img, lang='jpn+eng', output_type=pytesseract.Output.DICT)
-        
+          ocr_data = pytesseract.image_to_data(img, lang='jpn', output_type=pytesseract.Output.DICT)
+
         # Process OCR results and group into text blocks
         current_line_blocks = []
         current_line_y = None
         tolerance = 20  # pixels tolerance for same line
-        
+
         for i, text in enumerate(ocr_data['text']):
           # Skip empty text
           if not text.strip():
             continue
-            
+
           # Get position info (scale back from 2x zoom)
           conf = int(ocr_data['conf'][i])
           if conf < 30:  # Skip low confidence text
             continue
-            
+
           x = ocr_data['left'][i] / 2  # Scale back from 2x zoom
           y = ocr_data['top'][i] / 2
           w = ocr_data['width'][i] / 2
           h = ocr_data['height'][i] / 2
-          
+
           # Handle page rotation coordinate adjustment
           if page.rotation == 180:
             page_width = page.rect.width
             page_height = page.rect.height
             x = page_width - x - w
             y = page_height - y - h
-          
+
           # Group into lines based on y-coordinate
           if current_line_y is None or abs(y - current_line_y) <= tolerance:
             current_line_blocks.append({
@@ -173,7 +179,7 @@ class PDFToHTMLConverter:
               min_y = min(block['y'] for block in current_line_blocks)
               max_x = max(block['x'] + block['width'] for block in current_line_blocks)
               max_y = max(block['y'] + block['height'] for block in current_line_blocks)
-              
+
               text_blocks.append(PDFTextBlock(
                 line_text,
                 min_x,
@@ -182,7 +188,7 @@ class PDFToHTMLConverter:
                 max_y - min_y,
                 page_num
               ))
-            
+
             # Start new line
             current_line_blocks = [{
               'text': text,
@@ -192,7 +198,7 @@ class PDFToHTMLConverter:
               'height': h
             }]
             current_line_y = y
-        
+
         # Process the last line
         if current_line_blocks:
           line_text = ' '.join(block['text'] for block in current_line_blocks)
@@ -201,7 +207,7 @@ class PDFToHTMLConverter:
           min_y = min(block['y'] for block in current_line_blocks)
           max_x = max(block['x'] + block['width'] for block in current_line_blocks)
           max_y = max(block['y'] + block['height'] for block in current_line_blocks)
-          
+
           text_blocks.append(PDFTextBlock(
             line_text,
             min_x,
@@ -210,11 +216,11 @@ class PDFToHTMLConverter:
             max_y - min_y,
             page_num
           ))
-        
+
       except Exception as e:
         print(f"OCR failed for page {page_num}: {e}")
         continue
-    
+
     doc.close()
     return text_blocks
 
