@@ -52,6 +52,7 @@ setup(
     "console_scripts": [
       "japanese-pdf-translator=sensei.cli:main",
       "pdf-to-html=sensei.pdf_to_html:main",
+      "pic-extract=sensei.pic_extract:main",
     ],
   },
   include_package_data=True,
